@@ -1,6 +1,7 @@
 module github.com/apitoolkit/apitoolkit-go
 
 go 1.22.3
+toolchain go1.24.1
 
 require (
 	github.com/AsaiYusuke/jsonpath v1.6.0
@@ -80,7 +81,7 @@ require (
 	go.opentelemetry.io/otel/sdk v1.32.0 // indirect
 	go.opentelemetry.io/otel/trace v1.35.0
 	golang.org/x/arch v0.8.0 // indirect
-	golang.org/x/crypto v0.33.0 // indirect
+	golang.org/x/crypto v0.35.0 // indirect
 	golang.org/x/net v0.35.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/text v0.22.0 // indirect

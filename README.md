@@ -1,7 +1,7 @@
 <div align="center">
 
-![Monoscope's Logo](https://github.com/monoscope/.github/blob/main/images/logo-white.svg?raw=true#gh-dark-mode-only)
-![Monoscope's Logo](https://github.com/monoscope/.github/blob/main/images/logo-black.svg?raw=true#gh-light-mode-only)
+![Monoscope's Logo](https://github.com/monoscope-tech/.github/blob/main/images/logo-white.svg?raw=true#gh-dark-mode-only)
+![Monoscope's Logo](https://github.com/monoscope-tech/.github/blob/main/images/logo-black.svg?raw=true#gh-light-mode-only)
 
 ## Monoscope Golang SDKs
 
@@ -34,9 +34,9 @@ Discover detailed and comprehensive documentation for each SDK here:
 
 To contribute to the development of this project or request help from the community and our team, kindly do any of the following:
 
-- Read our [Contributors Guide](https://github.com/monoscope/.github/blob/main/CONTRIBUTING.md).
+- Read our [Contributors Guide](https://github.com/monoscope-tech/.github/blob/main/CONTRIBUTING.md).
 - Join our community [Discord Server](https://discord.gg/dEB6EjQnKB).
-- Create a [new issue](https://github.com/monoscope/monoscope-go/issues) in this repository.
+- Create a [new issue](https://github.com/monoscope-tech/monoscope-go/issues) in this repository.
 - [Follow](https://x.com/APItoolkitHQ) us on X (twitter) for updates.
 - Our official [LinkedIn](https://www.linkedin.com/company/apitoolkit) page.
 
@@ -48,6 +48,6 @@ This repository is published under the [MIT](LICENSE) license.
 
 <div align="center">
 
-<a href="https://apitoolkit.io?utm_source=github-sdks" target="_blank" rel="noopener noreferrer"><img src="https://github.com/monoscope/.github/blob/main/images/icon.png?raw=true" width="40" /></a>
+<a href="https://apitoolkit.io?utm_source=github-sdks" target="_blank" rel="noopener noreferrer"><img src="https://github.com/monoscope-tech/.github/blob/main/images/icon.png?raw=true" width="40" /></a>
 
 </div>

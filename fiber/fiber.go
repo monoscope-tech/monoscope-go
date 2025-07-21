@@ -8,7 +8,7 @@ import (
 	fiber "github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/honeycombio/otel-config-go/otelconfig"
-	apt "github.com/monoscope/monoscope-go"
+	apt "github.com/monoscope-tech/monoscope-go"
 	"go.opentelemetry.io/otel"
 )
 

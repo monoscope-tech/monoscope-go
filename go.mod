@@ -1,4 +1,4 @@
-module github.com/monoscope/monoscope-go
+module github.com/monoscope-tech/monoscope-go
 
 go 1.22.3
 

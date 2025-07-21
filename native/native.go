@@ -13,7 +13,7 @@ import (
 	"github.com/honeycombio/otel-config-go/otelconfig"
 	"go.opentelemetry.io/otel"
 
-	apt "github.com/monoscope/monoscope-go"
+	apt "github.com/monoscope-tech/monoscope-go"
 )
 
 type Config struct {

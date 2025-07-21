@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/honeycombio/otel-config-go/otelconfig"
-	apt "github.com/monoscope/monoscope-go"
+	apt "github.com/monoscope-tech/monoscope-go"
 	"go.opentelemetry.io/otel"
 )
 

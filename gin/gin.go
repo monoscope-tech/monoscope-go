@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/honeycombio/otel-config-go/otelconfig"
-	apt "github.com/monoscope/monoscope-go"
+	apt "github.com/monoscope-tech/monoscope-go"
 	"go.opentelemetry.io/otel"
 )
 

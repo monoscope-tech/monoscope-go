@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/honeycombio/otel-config-go/otelconfig"
 	"github.com/labstack/echo/v4"
-	apt "github.com/monoscope/monoscope-go"
+	apt "github.com/monoscope-tech/monoscope-go"
 	"go.opentelemetry.io/otel"
 )
 

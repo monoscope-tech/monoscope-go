@@ -1,11 +1,11 @@
 <div align="center">
 
-![Monoscope's Logo](https://github.com/monoscope/.github/blob/main/images/logo-white.svg?raw=true#gh-dark-mode-only)
-![Monoscope's Logo](https://github.com/monoscope/.github/blob/main/images/logo-black.svg?raw=true#gh-light-mode-only)
+![Monoscope's Logo](https://github.com/monoscope-tech/.github/blob/main/images/logo-white.svg?raw=true#gh-dark-mode-only)
+![Monoscope's Logo](https://github.com/monoscope-tech/.github/blob/main/images/logo-black.svg?raw=true#gh-light-mode-only)
 
 ## Golang Gin SDK
 
-[![Monoscope SDK](https://img.shields.io/badge/Monoscope-SDK-0068ff?logo=go)](https://github.com/topics/monoscope-sdk) [![Join Discord Server](https://img.shields.io/badge/Chat-Discord-7289da)](https://apitoolkit.io/discord?utm_campaign=devrel&utm_medium=github&utm_source=sdks_readme) [![Monoscope Docs](https://img.shields.io/badge/Read-Docs-0068ff)](https://apitoolkit.io/docs/sdks/golang?utm_campaign=devrel&utm_medium=github&utm_source=sdks_readme) [![GoDoc](https://godoc.org/github.com/monoscope/monoscope-go?status.svg)](https://godoc.org/github.com/monoscope/monoscope-go/main/tree/gin)
+[![Monoscope SDK](https://img.shields.io/badge/Monoscope-SDK-0068ff?logo=go)](https://github.com/topics/monoscope-sdk) [![Join Discord Server](https://img.shields.io/badge/Chat-Discord-7289da)](https://apitoolkit.io/discord?utm_campaign=devrel&utm_medium=github&utm_source=sdks_readme) [![Monoscope Docs](https://img.shields.io/badge/Read-Docs-0068ff)](https://apitoolkit.io/docs/sdks/golang?utm_campaign=devrel&utm_medium=github&utm_source=sdks_readme) [![GoDoc](https://godoc.org/github.com/monoscope-tech/monoscope-go?status.svg)](https://godoc.org/github.com/monoscope-tech/monoscope-go/main/tree/gin)
 
 Monoscope is an end-to-end API and web services management toolkit for engineers and customer support teams. To integrate your Golang application with Monoscope, you need to use this SDK to monitor incoming traffic, aggregate the requests, and then deliver them to the Monoscope's servers.
 
@@ -27,7 +27,7 @@ Monoscope is an end-to-end API and web services management toolkit for engineers
 Kindly run the command below to install the SDK:
 
 ```sh
-go get github.com/monoscope/monoscope-go/gin
+go get github.com/monoscope-tech/monoscope-go/gin
 ```
 
 ## Configuration
@@ -48,7 +48,7 @@ package main
 import (
 	"log"
 
-	monoscope "github.com/monoscope/monoscope-go/gin"
+	monoscope "github.com/monoscope-tech/monoscope-go/gin"
 	"github.com/gin-gonic/gin"
   _ "github.com/joho/godotenv/autoload"
 )
@@ -92,9 +92,9 @@ func main() {
 
 To contribute to the development of this SDK or request help from the community and our team, kindly do any of the following:
 
-- Read our [Contributors Guide](https://github.com/monoscope/.github/blob/main/CONTRIBUTING.md).
+- Read our [Contributors Guide](https://github.com/monoscope-tech/.github/blob/main/CONTRIBUTING.md).
 - Join our community [Discord Server](https://apitoolkit.io/discord?utm_campaign=devrel&utm_medium=github&utm_source=sdks_readme).
-- Create a [new issue](https://github.com/monoscope/monoscope-go/issues/new/choose) in this repository.
+- Create a [new issue](https://github.com/monoscope-tech/monoscope-go/issues/new/choose) in this repository.
 
 ## License
 
@@ -104,6 +104,6 @@ This repository is published under the [MIT](LICENSE) license.
 
 <div align="center">
 
-<a href="https://apitoolkit.io?utm_campaign=devrel&utm_medium=github&utm_source=sdks_readme" target="_blank" rel="noopener noreferrer"><img src="https://github.com/monoscope/.github/blob/main/images/icon.png?raw=true" width="40" /></a>
+<a href="https://apitoolkit.io?utm_campaign=devrel&utm_medium=github&utm_source=sdks_readme" target="_blank" rel="noopener noreferrer"><img src="https://github.com/monoscope-tech/.github/blob/main/images/icon.png?raw=true" width="40" /></a>
 
 </div>

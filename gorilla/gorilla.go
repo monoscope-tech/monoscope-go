@@ -119,9 +119,11 @@ type responseRecorder struct {
 
 // WriteHeader captures the status code and writes headers to the real ResponseWriter.
 func (r *responseRecorder) WriteHeader(code int) {
-	r.status = true
-	r.statusCode = code
-	r.ResponseWriter.WriteHeader(code)
+	if !r.status{
+		r.status = true
+		r.statusCode = code
+		r.ResponseWriter.WriteHeader(code)
+	}
 }
 
 // Write captures response body and ensures WriteHeader is called with 200 if not already.

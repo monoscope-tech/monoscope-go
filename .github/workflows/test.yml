@@ -1,0 +1,103 @@
+name: Tests
+
+on:
+  push:
+    branches: [ "**" ]  # Run on push to any branch
+  pull_request:
+    branches: [ "**" ]  # Run on PRs to any branch
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.21', '1.22', '1.23']
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ matrix.go-version }}
+        cache: true
+        cache-dependency-path: go.sum
+
+    - name: Download dependencies
+      run: go mod download
+
+    - name: Verify dependencies
+      run: go mod verify
+
+    - name: Run tests
+      run: go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+
+    - name: Upload coverage to Codecov
+      if: matrix.go-version == '1.22'  # Only upload coverage once
+      uses: codecov/codecov-action@v4
+      with:
+        files: ./coverage.txt
+        fail_ci_if_error: false
+        verbose: true
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  test-build:
+    name: Test Build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.22'
+        cache: true
+
+    - name: Build all packages
+      run: go build -v ./...
+
+    - name: Check for go vet issues
+      run: go vet ./...
+
+    - name: Check formatting
+      run: |
+        if [ -n "$(gofmt -l .)" ]; then
+          echo "Go code is not formatted. Run 'gofmt -w .' to fix."
+          gofmt -d .
+          exit 1
+        fi
+
+  integration-test:
+    name: Integration Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        framework: [gin, echo, fiber, gorilla, chi, native]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.22'
+        cache: true
+
+    - name: Test ${{ matrix.framework }} package
+      run: |
+        cd ${{ matrix.framework }}
+        go test -v -race -timeout 30s ./...
+
+    - name: Build ${{ matrix.framework }} package
+      run: |
+        cd ${{ matrix.framework }}
+        go build -v ./...

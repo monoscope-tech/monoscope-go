@@ -1,0 +1,144 @@
+name: PR Validation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  validate-pr:
+    name: Validate PR
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout PR
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch full history for comparison
+
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.22'
+        cache: true
+
+    - name: Check PR base compatibility
+      run: |
+        echo "Checking compatibility with base branch..."
+        git fetch origin ${{ github.base_ref }}
+        BASE_SHA=$(git rev-parse origin/${{ github.base_ref }})
+        echo "Base branch SHA: $BASE_SHA"
+
+    - name: Run tests on PR branch
+      id: pr-tests
+      run: |
+        echo "Running tests on PR branch..."
+        go test -v -race ./... 2>&1 | tee pr-test-results.txt
+        echo "PR_TEST_EXIT_CODE=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
+
+    - name: Compare with base branch tests
+      if: always()
+      run: |
+        echo "### Test Results Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        if [ "${{ steps.pr-tests.outputs.PR_TEST_EXIT_CODE }}" == "0" ]; then
+          echo "✅ All tests passed on PR branch" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Tests failed on PR branch" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Failed tests:" >> $GITHUB_STEP_SUMMARY
+          grep -E "^--- FAIL:|^FAIL" pr-test-results.txt >> $GITHUB_STEP_SUMMARY || true
+        fi
+
+    - name: Check for test file changes
+      run: |
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Test Coverage Changes" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        # Check if any test files were added or modified
+        TEST_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep "_test.go$" || true)
+
+        if [ -n "$TEST_FILES" ]; then
+          echo "📝 Test files modified in this PR:" >> $GITHUB_STEP_SUMMARY
+          echo "$TEST_FILES" | while read file; do
+            echo "- $file" >> $GITHUB_STEP_SUMMARY
+          done
+        else
+          echo "⚠️ No test files were added or modified in this PR" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Comment on PR
+      if: failure() && github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          const fs = require('fs');
+          const testResults = fs.readFileSync('pr-test-results.txt', 'utf8');
+          const failedTests = testResults.match(/--- FAIL:.*/g) || [];
+
+          const comment = `## ❌ Tests Failed
+
+          The following tests failed in this PR:
+
+          \`\`\`
+          ${failedTests.join('\n')}
+          \`\`\`
+
+          Please fix the failing tests before merging.`;
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
+
+  benchmark-comparison:
+    name: Benchmark Comparison
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'benchmark')
+
+    steps:
+    - name: Checkout base branch
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.base_ref }}
+
+    - name: Setup Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.22'
+        cache: true
+
+    - name: Run base benchmarks
+      run: |
+        go test -bench=. -benchmem ./... > base-bench.txt 2>&1 || true
+
+    - name: Checkout PR branch
+      uses: actions/checkout@v4
+
+    - name: Run PR benchmarks
+      run: |
+        go test -bench=. -benchmem ./... > pr-bench.txt 2>&1 || true
+
+    - name: Compare benchmarks
+      run: |
+        echo "### Benchmark Comparison" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Base branch vs PR branch:" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        # Simple comparison - could be enhanced with benchstat
+        echo "```" >> $GITHUB_STEP_SUMMARY
+        echo "=== BASE BRANCH ===" >> $GITHUB_STEP_SUMMARY
+        grep "Benchmark" base-bench.txt | head -10 >> $GITHUB_STEP_SUMMARY || echo "No benchmarks found" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "=== PR BRANCH ===" >> $GITHUB_STEP_SUMMARY
+        grep "Benchmark" pr-bench.txt | head -10 >> $GITHUB_STEP_SUMMARY || echo "No benchmarks found" >> $GITHUB_STEP_SUMMARY
+        echo "```" >> $GITHUB_STEP_SUMMARY

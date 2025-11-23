@@ -25,7 +25,7 @@ jobs:
           cache: false  # golangci-lint handles its own caching
 
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v9
         with:
           version: latest
           args: --timeout=5m --issues-exit-code=0  # Start with warnings only

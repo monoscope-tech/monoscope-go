@@ -355,3 +355,22 @@ func TestMiddlewareWithRedaction(t *testing.T) {
 	// The actual redaction happens in apt.BuildPayload, which we can't test here
 	// but we ensure the middleware is passing the configuration correctly
 }
+
+func TestMultipleWriteHeaderCalls(t *testing.T) {
+	config := Config{ServiceName: "test"}
+	mux := mux.NewRouter()
+	handler := Middleware(config)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(201)
+		w.WriteHeader(202) // Should be ignored
+		w.Write([]byte("test"))
+	}))
+
+	mux.HandleFunc("/", handler.ServeHTTP)
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+
+	if rec.Code != 201 {
+		t.Errorf("Multiple WriteHeader calls not handled correctly: got %d, want 201", rec.Code)
+	}
+}

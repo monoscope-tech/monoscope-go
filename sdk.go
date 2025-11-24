@@ -69,7 +69,6 @@ type Config struct {
 }
 
 func CreateSpan(payload Payload, config Config, span trace.Span) {
-	defer span.End()
 	atErrors, _ := json.Marshal(payload.Errors)
 	queryParams, _ := json.Marshal(payload.QueryParams)
 	pathParams, _ := json.Marshal(payload.PathParams)
@@ -143,7 +142,7 @@ func RedactHeaders(headers map[string][]string, redactList []string) map[string]
 
 func find(haystack []string, needle string) bool {
 	for _, hay := range haystack {
-		if hay == needle {
+		if strings.EqualFold(hay, needle) {
 			return true
 		}
 	}

@@ -61,8 +61,9 @@ func Middleware(config Config) echo.MiddlewareFunc {
 		return func(ctx echo.Context) (err error) {
 			tracer := otel.GetTracerProvider().Tracer(config.ServiceName)
 			newCtx, span := tracer.Start(ctx.Request().Context(), "monoscope.http", trace.WithSpanKind(trace.SpanKindServer))
+			defer span.End()
 
-			msgID := uuid.Must(uuid.NewRandom())
+			msgID := uuid.New()
 			ctx.Set(string(apt.CurrentRequestMessageID), msgID)
 
 			errorList := []apt.ATError{}
@@ -145,23 +146,27 @@ func ConfigureOpenTelemetry(opts ...otelconfig.Option) (func(), error) {
 	return otelconfig.ConfigureOpenTelemetry(opts...)
 }
 
-var WithServiceName = otelconfig.WithServiceName
-var WithServiceVersion = otelconfig.WithServiceVersion
-var WithLogLevel = otelconfig.WithLogLevel
-var WithResourceAttributes = otelconfig.WithResourceAttributes
-var WithResourceOption = otelconfig.WithResourceOption
-var WithPropagators = otelconfig.WithPropagators
-var WithErrorHandler = otelconfig.WithErrorHandler
-var WithMetricsReportingPeriod = otelconfig.WithMetricsReportingPeriod
-var WithMetricsEnabled = otelconfig.WithMetricsEnabled
-var WithTracesEnabled = otelconfig.WithTracesEnabled
-var WithSpanProcessor = otelconfig.WithSpanProcessor
-var WithSampler = otelconfig.WithSampler
+var (
+	WithServiceName            = otelconfig.WithServiceName
+	WithServiceVersion         = otelconfig.WithServiceVersion
+	WithLogLevel               = otelconfig.WithLogLevel
+	WithResourceAttributes     = otelconfig.WithResourceAttributes
+	WithResourceOption         = otelconfig.WithResourceOption
+	WithPropagators            = otelconfig.WithPropagators
+	WithErrorHandler           = otelconfig.WithErrorHandler
+	WithMetricsReportingPeriod = otelconfig.WithMetricsReportingPeriod
+	WithMetricsEnabled         = otelconfig.WithMetricsEnabled
+	WithTracesEnabled          = otelconfig.WithTracesEnabled
+	WithSpanProcessor          = otelconfig.WithSpanProcessor
+	WithSampler                = otelconfig.WithSampler
+)
 
 func HTTPClient(ctx context.Context, opts ...apt.RoundTripperOption) *http.Client {
 	return apt.HTTPClient(ctx, opts...)
 }
 
-var WithRedactHeaders = apt.WithRedactHeaders
-var WithRedactRequestBody = apt.WithRedactRequestBody
-var WithRedactResponseBody = apt.WithRedactResponseBody
+var (
+	WithRedactHeaders      = apt.WithRedactHeaders
+	WithRedactRequestBody  = apt.WithRedactRequestBody
+	WithRedactResponseBody = apt.WithRedactResponseBody
+)

@@ -26,6 +26,7 @@ func (rt *roundTripper) RoundTrip(req *http.Request) (res *http.Response, err er
 
 	tracer := otel.GetTracerProvider().Tracer("")
 	_, span := tracer.Start(rt.ctx, "monoscope.http", trace.WithSpanKind(trace.SpanKindClient))
+	defer span.End()
 
 	// Capture the request body
 	reqBodyBytes := []byte{}

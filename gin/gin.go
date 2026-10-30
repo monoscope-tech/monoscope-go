@@ -128,7 +128,7 @@ func getAptConfig(config Config) apt.Config {
 }
 
 func ConfigureOpenTelemetry(opts ...otelconfig.Option) (func(), error) {
-	opts = append([]otelconfig.Option{otelconfig.WithExporterEndpoint("otelcol.apitoolkit.io:4317"), otelconfig.WithExporterInsecure(true)}, opts...)
+	opts = append([]otelconfig.Option{otelconfig.WithExporterEndpoint("otelcol.monoscope.tech:4317"), otelconfig.WithExporterInsecure(true)}, opts...)
 	return otelconfig.ConfigureOpenTelemetry(opts...)
 }
 

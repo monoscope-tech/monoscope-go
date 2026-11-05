@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -76,10 +77,11 @@ func Middleware(config Config) gin.HandlerFunc {
 
 		defer func() {
 			if err := recover(); err != nil {
-				if _, ok := err.(error); !ok {
-					err = errors.New(err.(string))
+				e, ok := err.(error)
+				if !ok {
+					e = errors.New(fmt.Sprint(err))
 				}
-				apt.ReportError(ctx.Request.Context(), err.(error))
+				apt.ReportError(ctx.Request.Context(), e)
 				payload := apt.BuildPayload(apt.GoGinSDKType,
 					ctx.Request, 500,
 					reqByteBody, blw.body.Bytes(), ctx.Writer.Header().Clone(),

@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -18,14 +19,19 @@ type roundTripper struct {
 }
 
 func (rt *roundTripper) RoundTrip(req *http.Request) (res *http.Response, err error) {
+	// The request's own context carries the caller's trace; the client's is only a fallback for requests sent without one.
+	ctx := req.Context()
+	if !trace.SpanContextFromContext(ctx).IsValid() {
+		ctx = rt.ctx
+	}
 	defer func() {
 		if err != nil {
-			ReportError(rt.ctx, err)
+			ReportError(ctx, err)
 		}
 	}()
 
 	tracer := otel.GetTracerProvider().Tracer("")
-	_, span := tracer.Start(rt.ctx, "monoscope.http", trace.WithSpanKind(trace.SpanKindClient))
+	_, span := tracer.Start(ctx, "monoscope.http", trace.WithSpanKind(trace.SpanKindClient))
 	defer span.End()
 
 	// Capture the request body
@@ -41,11 +47,13 @@ func (rt *roundTripper) RoundTrip(req *http.Request) (res *http.Response, err er
 	if err != nil {
 		// Add the error for the given request payload
 		errorList = append(errorList, BuildError(err))
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 	}
 
 	var payload Payload
 	var parentMsgIDPtr *uuid.UUID
-	parentMsgID, ok := rt.ctx.Value(CurrentRequestMessageID).(uuid.UUID)
+	parentMsgID, ok := ctx.Value(CurrentRequestMessageID).(uuid.UUID)
 	if ok {
 		parentMsgIDPtr = &parentMsgID
 	}
@@ -69,9 +77,10 @@ func (rt *roundTripper) RoundTrip(req *http.Request) (res *http.Response, err er
 		CreateSpan(payload, conf, span)
 
 	} else {
+		// No response arrived, so there is no status code to report.
 		payload = BuildPayload(
 			GoOutgoing,
-			req, 503, reqBodyBytes,
+			req, 0, reqBodyBytes,
 			nil, nil, nil,
 			req.URL.Path,
 			rt.cfg.RedactHeaders, rt.cfg.RedactRequestBody, rt.cfg.RedactResponseBody,

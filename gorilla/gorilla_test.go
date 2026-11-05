@@ -7,14 +7,17 @@ package monoscopegorilla
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/gorilla/mux"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 )
@@ -311,15 +314,15 @@ func TestMiddleware(t *testing.T) {
 
 // TestMiddlewareWithRedaction tests that sensitive data is properly redacted
 func TestMiddlewareWithRedaction(t *testing.T) {
-	// This would require mocking or stubbing the apt.BuildPayload function
-	// Since we can't easily test the actual redaction without modifying the main package,
-	// this test ensures the middleware passes the right configuration
+	exporter := tracetest.NewInMemoryExporter()
+	otel.SetTracerProvider(trace.NewTracerProvider(trace.WithSyncer(exporter)))
 	config := Config{
-		ServiceName:        "test-service",
-		CaptureRequestBody: true,
-		RedactHeaders:      []string{"Authorization", "X-Secret"},
-		RedactRequestBody:  []string{"$.password", "$.credit_card"},
-		RedactResponseBody: []string{"$.token", "$.secret"},
+		ServiceName:         "test-service",
+		CaptureRequestBody:  true,
+		CaptureResponseBody: true,
+		RedactHeaders:       []string{"Authorization", "X-Secret"},
+		RedactRequestBody:   []string{"$.password", "$.credit_card"},
+		RedactResponseBody:  []string{"$.token", "$.secret"},
 	}
 
 	router := mux.NewRouter()
@@ -334,6 +337,7 @@ func TestMiddlewareWithRedaction(t *testing.T) {
 
 		w.Header().Set("X-Secret", "should-be-redacted")
 		w.Header().Set("X-Public", "visible")
+		w.Header().Set("Set-Cookie", "session=abc")
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(body)
 	}).Methods("POST")
@@ -342,6 +346,7 @@ func TestMiddlewareWithRedaction(t *testing.T) {
 	req := httptest.NewRequest("POST", "/test", bytes.NewBufferString(reqBody))
 	req.Header.Set("Authorization", "Bearer secret-token")
 	req.Header.Set("X-Secret", "secret-value")
+	req.Header.Set("cookie", "session=abc")
 	req.Header.Set("Content-Type", "application/json")
 
 	rec := httptest.NewRecorder()
@@ -351,9 +356,37 @@ func TestMiddlewareWithRedaction(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Errorf("Expected status 200, got %d", rec.Code)
 	}
+	if got := rec.Header().Get("Set-Cookie"); got != "session=abc" {
+		t.Errorf("client must receive the real Set-Cookie, got %q", got)
+	}
 
-	// The actual redaction happens in apt.BuildPayload, which we can't test here
-	// but we ensure the middleware is passing the configuration correctly
+	spans := exporter.GetSpans()
+	if len(spans) != 1 {
+		t.Fatalf("expected 1 span, got %d", len(spans))
+	}
+	attrs := map[string]attribute.Value{}
+	for _, kv := range spans[0].Attributes {
+		attrs[string(kv.Key)] = kv.Value
+	}
+	for k, want := range map[string]string{
+		"http.request.header.Authorization": "[CLIENT_REDACTED]",
+		"http.request.header.X-Secret":      "[CLIENT_REDACTED]",
+		"http.request.header.Cookie":        "[CLIENT_REDACTED]",
+		"http.request.header.Content-Type":  "application/json",
+		"http.response.header.X-Secret":     "[CLIENT_REDACTED]",
+		"http.response.header.Set-Cookie":   "[CLIENT_REDACTED]",
+		"http.response.header.X-Public":     "visible",
+	} {
+		if got := attrs[k].AsStringSlice(); len(got) != 1 || got[0] != want {
+			t.Errorf("%s = %v, want %q", k, got, want)
+		}
+	}
+	for k, secret := range map[string]string{"http.request.body": "secret123", "http.response.body": "secret-token"} {
+		body, _ := base64.StdEncoding.DecodeString(attrs[k].AsString())
+		if strings.Contains(string(body), secret) || !strings.Contains(string(body), "john") {
+			t.Errorf("%s not redacted: %s", k, body)
+		}
+	}
 }
 
 func TestMultipleWriteHeaderCalls(t *testing.T) {

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"slices"
 	"strings"
 
 	"github.com/AsaiYusuke/jsonpath"
@@ -131,13 +132,20 @@ func RedactJSON(data []byte, redactList []string) []byte {
 	return dataJSON
 }
 
+// defaultRedactedHeaders are always redacted, on top of Config.RedactHeaders. Matching is case-insensitive.
+var defaultRedactedHeaders = []string{"password", "Authorization", "Cookie", "Set-Cookie", "Proxy-Authorization"}
+
+// RedactHeaders returns a redacted copy, leaving headers untouched: callers pass live request and
+// response header maps that are still read after capture (e.g. Set-Cookie by http.Client's cookie jar).
 func RedactHeaders(headers map[string][]string, redactList []string) map[string][]string {
-	for k := range headers {
+	redacted := make(map[string][]string, len(headers))
+	for k, v := range headers {
 		if find(redactList, k) {
-			headers[k] = []string{"[CLIENT_REDACTED]"}
+			v = []string{"[CLIENT_REDACTED]"}
 		}
+		redacted[k] = v
 	}
-	return headers
+	return redacted
 }
 
 func find(haystack []string, needle string) bool {
@@ -167,10 +175,7 @@ func BuildPayload(SDKType string, req *http.Request,
 		return Payload{}
 	}
 
-	redactedHeaders := []string{"password", "Authorization", "Cookies"}
-	for _, v := range redactHeadersList {
-		redactedHeaders = append(redactedHeaders, strings.ToLower(v))
-	}
+	redactedHeaders := slices.Concat(defaultRedactedHeaders, redactHeadersList)
 
 	var parentIDVal *string
 	if parentID != nil {
@@ -239,10 +244,7 @@ func BuildFastHTTPPayload(SDKType string, req *fasthttp.RequestCtx,
 		reqHeaders[string(key)] = []string{string(value)}
 	})
 
-	redactedHeaders := []string{"password", "Authorization", "Cookies"}
-	for _, v := range redactHeadersList {
-		redactedHeaders = append(redactedHeaders, strings.ToLower(v))
-	}
+	redactedHeaders := slices.Concat(defaultRedactedHeaders, redactHeadersList)
 
 	var parentIDVal *string
 	if parentID != nil {

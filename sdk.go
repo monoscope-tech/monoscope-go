@@ -235,14 +235,14 @@ func BuildFastHTTPPayload(SDKType string, req *fasthttp.RequestCtx,
 	}
 
 	queryParams := map[string][]string{}
-	req.QueryArgs().VisitAll(func(key, value []byte) {
+	for key, value := range req.QueryArgs().All() {
 		queryParams[string(key)] = []string{string(value)}
-	})
+	}
 
 	reqHeaders := map[string][]string{}
-	req.Request.Header.VisitAll(func(key, value []byte) {
+	for key, value := range req.Request.Header.All() {
 		reqHeaders[string(key)] = []string{string(value)}
-	})
+	}
 
 	redactedHeaders := slices.Concat(defaultRedactedHeaders, redactHeadersList)
 

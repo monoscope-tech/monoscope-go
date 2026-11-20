@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/honeycombio/otel-config-go/otelconfig"
 	"github.com/valyala/fasthttp"
 )
 
@@ -46,5 +47,19 @@ func TestBuildPayloadRedactsHeaders(t *testing.T) {
 	}
 	if req.Header.Get("Authorization") != "Bearer abc" || respHeaders.Get("Set-Cookie") != "session=abc" {
 		t.Errorf("redaction mutated the live headers: %v %v", req.Header, respHeaders)
+	}
+}
+
+// Existing users exporting to a plaintext http:// endpoint must keep working; everyone else gets TLS on 443.
+func TestDefaultExporterOptions(t *testing.T) {
+	for env, insecure := range map[string]bool{"": false, "https://otel.monoscopehq.com": false, "http://otelcol.monoscope.tech:4317": true} {
+		t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", env)
+		var c otelconfig.Config
+		for _, o := range DefaultExporterOptions() {
+			o(&c)
+		}
+		if c.ExporterEndpoint != "otel.monoscopehq.com:443" || c.ExporterEndpointInsecure != insecure {
+			t.Errorf("env %q: got endpoint %q insecure %v, want insecure %v", env, c.ExporterEndpoint, c.ExporterEndpointInsecure, insecure)
+		}
 	}
 }

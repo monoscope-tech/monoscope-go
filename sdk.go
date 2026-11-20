@@ -5,15 +5,27 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	"slices"
 	"strings"
 
 	"github.com/AsaiYusuke/jsonpath"
 	"github.com/google/uuid"
+	"github.com/honeycombio/otel-config-go/otelconfig"
 	"github.com/valyala/fasthttp"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
+
+// DefaultExporterOptions targets monoscope's TLS ingest endpoint. Plaintext stays only for an
+// explicit http:// OTEL_EXPORTER_OTLP_ENDPOINT: otel-config-go ignores the URL scheme, and env
+// vars can't unset an insecure option once it is set.
+func DefaultExporterOptions() []otelconfig.Option {
+	return []otelconfig.Option{
+		otelconfig.WithExporterEndpoint("otel.monoscopehq.com:443"),
+		otelconfig.WithExporterInsecure(strings.HasPrefix(os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"), "http://")),
+	}
+}
 
 const (
 	GoDefaultSDKType = "GoBuiltIn"

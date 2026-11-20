@@ -100,7 +100,7 @@ func Middleware(config Config) func(http.Handler) http.Handler {
 }
 
 func ConfigureOpenTelemetry(opts ...otelconfig.Option) (func(), error) {
-	opts = append([]otelconfig.Option{otelconfig.WithExporterEndpoint("otelcol.monoscope.tech:4317"), otelconfig.WithExporterInsecure(true)}, opts...)
+	opts = append(apt.DefaultExporterOptions(), opts...)
 	return otelconfig.ConfigureOpenTelemetry(opts...)
 }
 

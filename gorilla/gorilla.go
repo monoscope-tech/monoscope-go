@@ -148,11 +148,7 @@ func (r *responseRecorder) StatusCode() int {
 // ConfigureOpenTelemetry initializes OpenTelemetry with default options and any additional options.
 // Returns a shutdown function to flush telemetry and an error if initialization fails.
 func ConfigureOpenTelemetry(opts ...otelconfig.Option) (func(), error) {
-	defaultOpts := []otelconfig.Option{
-		otelconfig.WithExporterEndpoint("otelcol.monoscope.tech:4317"),
-		otelconfig.WithExporterInsecure(true),
-	}
-	opts = append(defaultOpts, opts...)
+	opts = append(apt.DefaultExporterOptions(), opts...)
 	return otelconfig.ConfigureOpenTelemetry(opts...)
 }
 

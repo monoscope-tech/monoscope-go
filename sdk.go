@@ -22,7 +22,7 @@ import (
 // vars can't unset an insecure option once it is set.
 func DefaultExporterOptions() []otelconfig.Option {
 	return []otelconfig.Option{
-		otelconfig.WithExporterEndpoint("otel.monoscope.tech:443"),
+		otelconfig.WithExporterEndpoint("otel.monoscopehq.com:443"),
 		otelconfig.WithExporterInsecure(strings.HasPrefix(os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT"), "http://")),
 	}
 }
